@@ -30,43 +30,44 @@ export const skills = [
 ];
 
 export const technologies = [
+    "HTML",
+    "CSS",
     "TypeScript",
     "Git",
     "Figma",
     "Next.js",
     "Node.js",
     "Tailwind CSS",
-    "Redux",
     "GraphQL",
 ];
 
 export const projects = [
     {
         id: 1,
-        title: "Portfolio Website",
+        title: "D-Dion Luxury Restaurant (Full-Stack)",
         description:
-            "A personal portfolio website designed to showcase projects, skills, and professional experience in a clean, modern layout. Built with a focus on performance and smooth animations to leave a lasting impression.",
-        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600",
-        tags: ["Next.js", "Tailwind CSS", "TypeScript", "Figma"],
-        link: "#",
+            "A high-end, full-stack culinary platform engineered for elite dining establishments. This project features a robust dynamic architecture powered by Supabase, enabling real-time menu synchronization and specialized booking orchestration. The owner has access to a secure, custom-built Admin Dashboard to manage dish catalogs, pricing, and live table reservations. Every interaction is wrapped in a premium luxury aesthetic with fluid Framer Motion animations, ensuring a high-end digital experience that mirrors the quality of the restaurant itself.",
+        image: "/assets/projects/restaurant.png",
+        tags: ["React", "Supabase", "Tailwind CSS", "Framer Motion", "Admin Dashboard"],
+        link: "https://restaurant-7uel.vercel.app",
     },
     {
         id: 2,
-        title: "Restaurant Booking System",
+        title: "Maximum Gym & Fitness",
         description:
-            "A full-stack reservation platform that allows diners to browse menus, check availability, and book tables in real time. Restaurant owners can manage bookings, update availability, and view analytics through a dedicated dashboard.",
-        image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600",
-        tags: ["React", "Node.js", "GraphQL", "Redux"],
-        link: "#",
+            "A performance-driven business platform designed to bridge the gap between digital marketing and physical gym conversion. This landing page is optimized for maximum engagement, featuring clear membership pricing tiers, trainer profiles, and built-in WhatsApp integration for instant lead capture. The design is energetic and bold, utilizing a high-contrast dark theme to drive membership sign-ups and project a 'no-excuses' fitness atmosphere. It's a localized business tool built for real-world growth and community management.",
+        image: "/assets/projects/gym.png",
+        tags: ["React", "Tailwind CSS", "Bootstrap", "Business Growth"],
+        link: "https://maximum-gym-five.vercel.app",
     },
     {
         id: 3,
-        title: "Gym Website",
+        title: "BookBazar Marketplace",
         description:
-            "A dynamic fitness studio website featuring class schedules, membership plans, and trainer profiles to engage and convert new members. Includes an interactive timetable and smooth scroll animations for an energetic user experience.",
-        image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600",
-        tags: ["Next.js", "TypeScript", "Tailwind CSS", "Figma"],
-        link: "#",
+            "A community-focused college marketplace built to streamline the buying, selling, and exchanging of academic resources. The platform features a warm, user-centric interface that prioritizes accessibility and ease of use for students. Key technical highlights include a complex category-based filtering system, secure user authentication, and a clean marketplace UI that manages diverse listing types—from textbooks to academic research papers. It is a social-commerce bridge designed to solve the real-world problem of expensive college resources.",
+        image: "/assets/projects/bookstore.png",
+        tags: ["React", "Tailwind CSS", "Marketplace Engine", "Auth"],
+        link: "https://book-store-beta-topaz.vercel.app",
     },
 ];
 
@@ -74,12 +75,12 @@ export const socialLinks = [
     {
         name: "GitHub",
         icon: "Github",
-        url: "#",
+        url: "https://github.com/CreateWithLalit",
     },
     {
         name: "LinkedIn",
         icon: "Linkedin",
-        url: "#",
+        url: "https://www.linkedin.com/in/lalit-206274374",
     },
     {
         name: "Twitter",

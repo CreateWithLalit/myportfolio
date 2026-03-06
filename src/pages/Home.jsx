@@ -20,6 +20,123 @@ const NAV_LINKS = ['home', 'about', 'skills', 'projects', 'contact'];
 
 const ACCENT = 'var(--portfolio-accent)';
 const MUTED = 'var(--portfolio-text-muted)';
+const FORMSPREE_ID = process.env.REACT_APP_FORMSPREE_ID || "mojkqknj"; // Get this from formspree.io
+
+/* ══════════════════════════════════════════════════════════════
+   REUSABLE PROJECT CARD
+══════════════════════════════════════════════════════════════ */
+const ProjectCard = ({ project }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const description = project.description || "";
+    const isLong = description.length > 120;
+
+    return (
+        <div
+            style={{
+                backgroundColor: 'var(--portfolio-card-bg)',
+                borderRadius: '20px',
+                overflow: 'hidden',
+                border: '1px solid var(--portfolio-border)',
+                transition: 'all 0.3s ease',
+            }}
+        >
+            {/* Image */}
+            <div style={{
+                height: '220px',
+                overflow: 'hidden',
+                position: 'relative',
+                backgroundColor: 'var(--portfolio-alt-bg)', // Base color for skeleton
+                backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0) 0, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)',
+                backgroundSize: '200% 100%',
+                animation: 'skeleton-shimmer 1.5s infinite linear'
+            }}>
+                <img
+                    src={project.image}
+                    alt={project.title}
+                    loading="lazy"
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transition: 'transform 0.5s ease, opacity 0.3s ease',
+                        opacity: 0, // Start hidden for fade-in
+                    }}
+                    onLoad={(e) => { e.currentTarget.style.opacity = '1'; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                />
+            </div>
+            <style>{`
+                @keyframes skeleton-shimmer {
+                    0% { background-position: 200% 0; }
+                    100% { background-position: -200% 0; }
+                }
+            `}</style>
+
+            {/* Body */}
+            <div style={{ padding: '24px' }}>
+                <h3 className="font-fraunces" style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '10px', color: 'var(--portfolio-text)' }}>
+                    {project.title}
+                </h3>
+
+                <div style={{ marginBottom: '16px' }}>
+                    <p className="font-dm-sans" style={{
+                        color: MUTED, fontSize: '0.875rem', lineHeight: 1.6,
+                        margin: 0,
+                        display: '-webkit-box',
+                        WebkitLineClamp: isExpanded ? 'unset' : 3,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                    }}>
+                        {description}
+                    </p>
+                    {isLong && (
+                        <button
+                            onClick={() => setIsExpanded(!isExpanded)}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: ACCENT,
+                                fontSize: '0.78rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                padding: '4px 0',
+                                marginTop: '4px',
+                                textTransform: 'uppercase'
+                            }}
+                        >
+                            {isExpanded ? 'Read Less' : 'Read More'}
+                        </button>
+                    )}
+                </div>
+
+                {/* Tags */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '18px' }}>
+                    {project.tags.map((tag) => (
+                        <span key={tag} style={{
+                            backgroundColor: 'rgba(73,136,196,0.1)', color: ACCENT,
+                            borderRadius: '6px', padding: '4px 10px', fontSize: '0.78rem', fontWeight: 600,
+                        }}>
+                            {tag}
+                        </span>
+                    ))}
+                </div>
+
+                {/* Link */}
+                <a
+                    href={project.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: ACCENT, fontSize: '0.875rem', fontWeight: 700, textDecoration: 'none' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; }}
+                >
+                    View Project <ExternalLink size={14} />
+                </a>
+            </div>
+        </div>
+    );
+};
 
 export default function Home() {
     const [activeSection, setActiveSection] = useState('home');
@@ -33,12 +150,20 @@ export default function Home() {
     /* ─── Scroll reveal observer ──────────────────────────────── */
     useEffect(() => {
         const revealObserver = new IntersectionObserver(
-            (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+            (entries) => {
+                entries.forEach((e) => {
+                    if (e.isIntersecting) e.target.classList.add('visible');
+                });
+            },
             { threshold: 0.1 }
         );
-        document.querySelectorAll('.scroll-reveal').forEach((el) => revealObserver.observe(el));
+
+        // Re-query to catch dynamic elements or elements rendered after mount
+        const elements = document.querySelectorAll('.scroll-reveal');
+        elements.forEach((el) => revealObserver.observe(el));
+
         return () => revealObserver.disconnect();
-    }, []);
+    }, [projects]); // Depend on projects to ensure it runs after list renders
 
     /* ─── Active section observer ─────────────────────────────── */
     useEffect(() => {
@@ -94,12 +219,34 @@ export default function Home() {
         return errors;
     };
 
-    const handleFormSubmit = (e) => {
+    const handleFormSubmit = async (e) => {
         e.preventDefault();
         const errors = validateForm();
         if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
+
         setFormStatus('sending');
-        setTimeout(() => setFormStatus('sent'), 1500);
+
+        try {
+            const response = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+
+            if (response.ok) {
+                setFormStatus('sent');
+                setFormData({ name: '', email: '', message: '' });
+                setTimeout(() => setFormStatus('idle'), 5000);
+            } else {
+                setFormStatus('error');
+                alert("Something went wrong. Please check your Formspree ID or try again later.");
+                setTimeout(() => setFormStatus('idle'), 3000);
+            }
+        } catch (err) {
+            setFormStatus('error');
+            console.error("Form submission error:", err);
+            setTimeout(() => setFormStatus('idle'), 3000);
+        }
     };
 
     /* ─── Input shared styles ─────────────────────────────────── */
@@ -134,13 +281,20 @@ export default function Home() {
             }}>
                 <div className="container-custom" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '68px' }}>
                     {/* Logo */}
-                    <span
-                        className="font-fraunces"
+                    <div
                         onClick={() => scrollToSection('home')}
-                        style={{ fontSize: '1.5rem', color: ACCENT, cursor: 'pointer', fontWeight: 700, letterSpacing: '-0.5px' }}
+                        style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
                     >
-                        Lalit.
-                    </span>
+                        <img
+                            src="/logo.png"
+                            alt="Lalit Logo"
+                            style={{
+                                height: '40px',
+                                width: 'auto',
+                                borderRadius: '8px'
+                            }}
+                        />
+                    </div>
 
                     {/* Desktop links */}
                     <ul className="desktop-only"
@@ -172,10 +326,35 @@ export default function Home() {
                     <button
                         className="mobile-only"
                         onClick={() => setIsMenuOpen((v) => !v)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--portfolio-text)', padding: 4 }}
+                        style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            width: '40px', height: '40px', position: 'relative',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            zIndex: 60, padding: 0
+                        }}
                         aria-label="Toggle menu"
                     >
-                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                        <div style={{ width: '22px', height: '18px', position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                            <span style={{
+                                width: '100%', height: '2px',
+                                backgroundColor: 'var(--portfolio-text)', borderRadius: '2px',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                transform: isMenuOpen ? 'translateY(8px) rotate(45deg)' : 'none'
+                            }} />
+                            <span style={{
+                                width: '100%', height: '2px',
+                                backgroundColor: 'var(--portfolio-text)', borderRadius: '2px',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                opacity: isMenuOpen ? 0 : 1,
+                                transform: isMenuOpen ? 'translateX(10px)' : 'none'
+                            }} />
+                            <span style={{
+                                width: '100%', height: '2px',
+                                backgroundColor: 'var(--portfolio-text)', borderRadius: '2px',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                transform: isMenuOpen ? 'translateY(-8px) rotate(-45deg)' : 'none'
+                            }} />
+                        </div>
                     </button>
                 </div>
 
@@ -228,6 +407,8 @@ export default function Home() {
                     borderRadius: '50%', backgroundColor: ACCENT, opacity: 0.05, pointerEvents: 'none',
                 }} />
 
+
+
                 {/* Hero content */}
                 <div style={{ maxWidth: '700px', textAlign: 'center', padding: '0 24px', position: 'relative', zIndex: 1 }}>
                     {/* Available pill */}
@@ -270,20 +451,23 @@ export default function Home() {
                     {/* CTA buttons */}
                     <div className="animate-fade-in-up stagger-4"
                         style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '60px' }}>
-                        <button
-                            onClick={() => scrollToSection('projects')}
+                        <a
+                            href="/resume.pdf"
+                            download="Lalit_Resume.pdf"
                             style={{
                                 backgroundColor: ACCENT, color: '#fff',
                                 border: `2px solid ${ACCENT}`, borderRadius: '10px',
                                 padding: '13px 32px', fontSize: '0.95rem', fontWeight: 600,
                                 cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                                textDecoration: 'none',
+                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                                 transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                             }}
                             onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(73,136,196,0.35)'; }}
                             onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                         >
-                            View Projects
-                        </button>
+                            Download Resume
+                        </a>
                         <button
                             onClick={() => scrollToSection('contact')}
                             style={{
@@ -314,44 +498,135 @@ export default function Home() {
                 <div className="container-custom scroll-reveal">
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '64px', alignItems: 'center' }}>
 
-                        {/* Avatar */}
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <div style={{
-                                width: '280px', height: '280px', borderRadius: '50%',
-                                background: `linear-gradient(135deg, ${ACCENT} 0%, #7eb8e8 60%, #b8d8f5 100%)`,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                boxShadow: `0 24px 64px rgba(73,136,196,0.25)`,
-                                position: 'relative', flexShrink: 0,
-                            }}>
-                                <span className="font-fraunces" style={{ fontSize: '7rem', color: '#fff', fontWeight: 700, lineHeight: 1 }}>L</span>
-                                {/* Decorative ring */}
-                                <div style={{
-                                    position: 'absolute', inset: '-12px', borderRadius: '50%',
-                                    border: `2px dashed rgba(73,136,196,0.3)`,
-                                    animation: 'spin 20s linear infinite',
-                                }} />
-                            </div>
-                            <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+                        {/* Interactive Robot Avatar */}
+                        <div
+                            style={{
+                                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                                perspective: '1000px', cursor: 'pointer'
+                            }}
+                            onMouseMove={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const x = (e.clientX - rect.left) / rect.width - 0.5;
+                                const y = (e.clientY - rect.top) / rect.height - 0.5;
+                                e.currentTarget.style.setProperty('--mouse-x', x);
+                                e.currentTarget.style.setProperty('--mouse-y', y);
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.setProperty('--mouse-x', 0);
+                                e.currentTarget.style.setProperty('--mouse-y', 0);
+                            }}
+                        >
+                            <svg
+                                width="300" height="300" viewBox="0 0 200 200"
+                                style={{
+                                    transform: 'rotateX(calc(var(--mouse-y, 0) * -15deg)) rotateY(calc(var(--mouse-x, 0) * 15deg))',
+                                    transition: 'transform 0.1s ease-out'
+                                }}
+                            >
+                                {/* Glow Effect */}
+                                <defs>
+                                    <radialGradient id="robotGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                                        <stop offset="0%" style={{ stopColor: ACCENT, stopOpacity: 0.2 }} />
+                                        <stop offset="100%" style={{ stopColor: ACCENT, stopOpacity: 0 }} />
+                                    </radialGradient>
+                                </defs>
+                                <circle cx="100" cy="100" r="80" fill="url(#robotGlow)" />
+
+                                {/* Robot Body */}
+                                <rect x="60" y="110" width="80" height="60" rx="15" fill="var(--portfolio-card-bg)" stroke={ACCENT} strokeWidth="3" />
+                                <rect x="85" y="100" width="30" height="15" fill="var(--portfolio-card-bg)" stroke={ACCENT} strokeWidth="2" />
+
+                                {/* Robot Head Wrapper */}
+                                <g style={{
+                                    transform: 'translate(calc(var(--mouse-x, 0) * 15px), calc(var(--mouse-y, 0) * 15px))',
+                                    transition: 'transform 0.1s ease-out'
+                                }}>
+                                    {/* Head Shape */}
+                                    <rect x="55" y="45" width="90" height="70" rx="20" fill="var(--portfolio-bg)" stroke={ACCENT} strokeWidth="4" />
+
+                                    {/* Antenna */}
+                                    <line x1="100" y1="45" x2="100" y2="25" stroke={ACCENT} strokeWidth="3" />
+                                    <circle cx="100" cy="20" r="5" fill={ACCENT} className="animate-pulse" />
+
+                                    {/* Eyes (Glass) */}
+                                    <rect x="75" y="65" width="50" height="25" rx="12" fill="rgba(73,136,196,0.1)" stroke={ACCENT} strokeWidth="2" />
+
+                                    {/* Eye Pupils (Pupils follow cursor) */}
+                                    <g style={{
+                                        transform: 'translate(calc(var(--mouse-x, 0) * 10px), calc(var(--mouse-y, 0) * 6px))',
+                                        transition: 'transform 0.1s ease-out'
+                                    }}>
+                                        <circle cx="88" cy="77" r="4" fill={ACCENT} />
+                                        <circle cx="112" cy="77" r="4" fill={ACCENT} />
+                                    </g>
+
+                                    {/* Small Blinking Lights */}
+                                    <circle cx="70" cy="100" r="2" fill={ACCENT} style={{ animation: 'blink 2s infinite' }} />
+                                    <circle cx="130" cy="100" r="2" fill={ACCENT} style={{ animation: 'blink 2s infinite 1s' }} />
+                                </g>
+
+                                {/* Decorative Ring (Parallax) */}
+                                <circle
+                                    cx="100" cy="100" r="95"
+                                    fill="none" stroke={ACCENT} strokeWidth="1" strokeDasharray="8 8" opacity="0.3"
+                                    style={{
+                                        transform: 'translate(calc(var(--mouse-x, 0) * -10px), calc(var(--mouse-y, 0) * -10px))',
+                                        transition: 'transform 0.1s ease-out'
+                                    }}
+                                />
+                            </svg>
+                            <style>{`
+                                @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+                            `}</style>
                         </div>
 
                         {/* Text */}
                         <div>
-                            <p style={{ color: ACCENT, fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '12px' }}>
+                            <p style={{ color: ACCENT, fontWeight: 800, fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '4px', marginBottom: '16px' }}>
                                 About Me
                             </p>
                             <h2 className="font-fraunces" style={{ fontSize: 'clamp(1.8rem, 3vw, 2.4rem)', fontWeight: 700, lineHeight: 1.2, marginBottom: '20px', letterSpacing: '-0.5px', color: 'var(--portfolio-text)' }}>
-                                Passionate about crafting digital experiences
+                                Bridging Design & Engineering with Modern Web Solutions
                             </h2>
                             <p style={{ color: MUTED, lineHeight: 1.8, marginBottom: '16px', fontSize: '0.97rem' }}>
-                                I'm Lalit, a frontend developer based in India with a strong passion for building
-                                visually compelling and performant web applications. With React as my primary tool,
-                                I bridge the gap between design and engineering to deliver products people enjoy using.
+                                I'm Lalit, a results-driven Frontend Developer and dedicated **Freelancer** based in India.
+                                Over the past year, I've mastered the art of building scalable, high-performance web applications
+                                using **React, Next.js, and Full-Stack integrations** like Supabase and Node.js.
                             </p>
-                            <p style={{ color: MUTED, lineHeight: 1.8, marginBottom: '32px', fontSize: '0.97rem' }}>
-                                I care deeply about clean code, pixel-perfect design, and intuitive user experiences.
-                                When I'm not coding, I'm exploring new design trends, contributing to open-source projects,
-                                or sketching wireframes for side projects that never quite ship — but always teach me something new.
+                            <p style={{ color: MUTED, lineHeight: 1.8, marginBottom: '24px', fontSize: '0.97rem' }}>
+                                My journey is defined by a commitment to continuous learning and the successful delivery of complex projects.
+                                I recently engineered the **D-Dion Luxury Restaurant platform**, a full-stack solution featuring
+                                real-time bookings and administrative control. My approach combines pixel-perfect design
+                                with clean, maintainable code to create seamless digital products.
                             </p>
+                            <div style={{
+                                backgroundColor: 'rgba(73,136,196,0.05)',
+                                borderLeft: `4px solid ${ACCENT}`,
+                                padding: '16px 20px',
+                                borderRadius: '8px',
+                                marginBottom: '32px'
+                            }}>
+                                <p style={{ color: 'var(--portfolio-text)', fontWeight: 700, fontSize: '1rem', marginBottom: '8px' }}>
+                                    🚀 Open for Freelance Opportunities
+                                </p>
+                                <p style={{ color: MUTED, fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>
+                                    Looking for a dedicated developer to bring your vision to life? I specialize in building
+                                    premium landing pages, SaaS dashboards, and full-stack applications. **Let's connect and build something extraordinary together.**
+                                </p>
+                                <button
+                                    onClick={() => scrollToSection('contact')}
+                                    style={{
+                                        marginTop: '16px', backgroundColor: ACCENT, color: '#fff',
+                                        border: 'none', borderRadius: '8px', padding: '10px 20px',
+                                        fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
+                                        transition: 'opacity 0.2s ease'
+                                    }}
+                                    onMouseEnter={(e) => e.target.style.opacity = '0.9'}
+                                    onMouseLeave={(e) => e.target.style.opacity = '1'}
+                                >
+                                    Work With Me
+                                </button>
+                            </div>
 
                             {/* Info grid */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
@@ -382,7 +657,7 @@ export default function Home() {
                 <div className="container-custom">
                     {/* Header */}
                     <div className="scroll-reveal" style={{ textAlign: 'center', marginBottom: '56px' }}>
-                        <p style={{ color: ACCENT, fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '10px' }}>
+                        <p style={{ color: ACCENT, fontWeight: 800, fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '4px', marginBottom: '16px' }}>
                             What I Do
                         </p>
                         <h2 className="font-fraunces" style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--portfolio-text)' }}>
@@ -456,7 +731,7 @@ export default function Home() {
                 <div className="container-custom">
                     {/* Header */}
                     <div className="scroll-reveal" style={{ textAlign: 'center', marginBottom: '56px' }}>
-                        <p style={{ color: ACCENT, fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '10px' }}>
+                        <p style={{ color: ACCENT, fontWeight: 800, fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '4px', marginBottom: '16px' }}>
                             My Work
                         </p>
                         <h2 className="font-fraunces" style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--portfolio-text)' }}>
@@ -467,73 +742,16 @@ export default function Home() {
                     {/* Grid */}
                     <div className="scroll-reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '28px', marginBottom: '48px' }}>
                         {projects.map((project) => (
-                            <div
-                                key={project.id}
-                                style={{
-                                    backgroundColor: 'var(--portfolio-card-bg)', borderRadius: '18px', overflow: 'hidden',
-                                    boxShadow: '0 2px 16px rgba(0,0,0,0.07)',
-                                    transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-                                    border: '1px solid var(--portfolio-border)',
-                                }}
-                                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 20px 48px rgba(73,136,196,0.16)'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 16px rgba(0,0,0,0.07)'; }}
-                            >
-                                {/* Image */}
-                                <div style={{ overflow: 'hidden', height: '192px', backgroundColor: 'var(--portfolio-hero-bg)' }}>
-                                    <img
-                                        src={project.image}
-                                        alt={project.title}
-                                        style={{
-                                            width: '100%', height: '100%', objectFit: 'cover',
-                                            transition: 'transform 0.5s ease',
-                                        }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
-                                    />
-                                </div>
-
-                                {/* Body */}
-                                <div style={{ padding: '24px' }}>
-                                    <h3 className="font-fraunces" style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '10px', color: 'var(--portfolio-text)' }}>
-                                        {project.title}
-                                    </h3>
-                                    <p className="font-dm-sans" style={{
-                                        color: MUTED, fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '16px',
-                                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                                    }}>
-                                        {project.description}
-                                    </p>
-
-                                    {/* Tags */}
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '18px' }}>
-                                        {project.tags.map((tag) => (
-                                            <span key={tag} style={{
-                                                backgroundColor: 'rgba(73,136,196,0.1)', color: ACCENT,
-                                                borderRadius: '6px', padding: '4px 10px', fontSize: '0.78rem', fontWeight: 600,
-                                            }}>
-                                                {tag}
-                                            </span>
-                                        ))}
-                                    </div>
-
-                                    {/* Link */}
-                                    <a
-                                        href={project.link}
-                                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: ACCENT, fontSize: '0.875rem', fontWeight: 700, textDecoration: 'none' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; }}
-                                    >
-                                        View Project <ExternalLink size={14} />
-                                    </a>
-                                </div>
-                            </div>
+                            <ProjectCard key={project.id} project={project} />
                         ))}
                     </div>
 
                     {/* GitHub CTA */}
                     <div className="scroll-reveal" style={{ textAlign: 'center' }}>
                         <a
-                            href="#"
+                            href="https://github.com/CreateWithLalit"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             style={{
                                 display: 'inline-flex', alignItems: 'center', gap: '10px',
                                 border: `2px solid var(--portfolio-border)`, borderRadius: '10px',
@@ -602,6 +820,7 @@ export default function Home() {
                                     <input
                                         type="text"
                                         name="name"
+                                        autoComplete="name"
                                         placeholder="Your Name"
                                         value={formData.name}
                                         onChange={handleFormChange}
@@ -617,6 +836,7 @@ export default function Home() {
                                     <input
                                         type="email"
                                         name="email"
+                                        autoComplete="email"
                                         placeholder="Your Email"
                                         value={formData.email}
                                         onChange={handleFormChange}
@@ -681,15 +901,17 @@ export default function Home() {
                         © {new Date().getFullYear()} Lalit · Built with React
                     </p>
                     <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexGrow: 1 }} className="md:justify-end">
-                        {[Github, Linkedin].map((Icon, i) => (
+                        {socialLinks.map((social) => (
                             <a
-                                key={i}
-                                href="#"
+                                key={social.name}
+                                href={social.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 style={{ color: MUTED, transition: 'color 0.2s ease' }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = ACCENT; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = MUTED; }}
                             >
-                                <Icon size={20} />
+                                <LucideIcon name={social.icon} size={20} />
                             </a>
                         ))}
                     </div>
