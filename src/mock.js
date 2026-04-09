@@ -53,7 +53,7 @@ export const projects = [
             "Developed a full-stack restaurant management system with dynamic menus and real-time order tracking via Supabase Realtime. Engineered an admin dashboard with server-side rendering, reducing initial page load time by 40%. Implemented database schema with PL/pgSQL stored procedures, handling 100+ concurrent orders efficiently.",
         image: "/assets/projects/restaurant.png",
         tags: ["Next.js", "TypeScript", "Tailwind CSS", "Supabase", "PostgreSQL", "PL/pgSQL"],
-        link: "https://restaurant-web-app.vercel.app",
+        link: "https://restaurant-mu-blue.vercel.app/",
     },
     {
         id: 2,
