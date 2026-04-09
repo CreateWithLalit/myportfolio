@@ -30,29 +30,42 @@ export const skills = [
 ];
 
 export const technologies = [
-    "HTML",
-    "CSS",
+    "JavaScript (ES6+)",
     "TypeScript",
-    "Git",
-    "Figma",
+    "React.js",
     "Next.js",
-    "Node.js",
     "Tailwind CSS",
-    "GraphQL",
+    "PostgreSQL",
+    "REST APIs",
+    "Git",
+    "GitHub",
+    "VS Code",
+    "Claude",
+    "ChatGPT",
+    "Cursor",
 ];
 
 export const projects = [
     {
         id: 1,
-        title: "D-Dion Luxury Restaurant (Full-Stack)",
+        title: "Restaurant Web App",
         description:
-            "A high-end, full-stack culinary platform engineered for elite dining establishments. This project features a robust dynamic architecture powered by Supabase, enabling real-time menu synchronization and specialized booking orchestration. The owner has access to a secure, custom-built Admin Dashboard to manage dish catalogs, pricing, and live table reservations. Every interaction is wrapped in a premium luxury aesthetic with fluid Framer Motion animations, ensuring a high-end digital experience that mirrors the quality of the restaurant itself.",
+            "Developed a full-stack restaurant management system with dynamic menus and real-time order tracking via Supabase Realtime. Engineered an admin dashboard with server-side rendering, reducing initial page load time by 40%. Implemented database schema with PL/pgSQL stored procedures, handling 100+ concurrent orders efficiently.",
         image: "/assets/projects/restaurant.png",
-        tags: ["React", "Supabase", "Tailwind CSS", "Framer Motion", "Admin Dashboard"],
-        link: "https://restaurant-7uel.vercel.app",
+        tags: ["Next.js", "TypeScript", "Tailwind CSS", "Supabase", "PostgreSQL", "PL/pgSQL"],
+        link: "https://restaurant-web-app.vercel.app",
     },
     {
         id: 2,
+        title: "DentalCare Pro - Clinic Website",
+        description:
+            "Built a modern clinic website with service listings, appointment booking, and WhatsApp/call CTAs. Achieved 95+ PageSpeed score through image optimization, lazy loading, and code minification. Optimized for local SEO targeting Noida, UP, resulting in improved search visibility for dental services.",
+        image: "/assets/projects/dental.png",
+        tags: ["React.js", "Next.js", "Tailwind CSS", "SEO Optimization"],
+        link: "https://dentalcarepro-ten.vercel.app",
+    },
+    {
+        id: 3,
         title: "Maximum Gym & Fitness",
         description:
             "A performance-driven business platform designed to bridge the gap between digital marketing and physical gym conversion. This landing page is optimized for maximum engagement, featuring clear membership pricing tiers, trainer profiles, and built-in WhatsApp integration for instant lead capture. The design is energetic and bold, utilizing a high-contrast dark theme to drive membership sign-ups and project a 'no-excuses' fitness atmosphere. It's a localized business tool built for real-world growth and community management.",
@@ -61,13 +74,22 @@ export const projects = [
         link: "https://maximum-gym-five.vercel.app",
     },
     {
-        id: 3,
-        title: "BookBazar Marketplace",
+        id: 4,
+        title: "FinTrack - Finance Dashboard",
         description:
-            "A community-focused college marketplace built to streamline the buying, selling, and exchanging of academic resources. The platform features a warm, user-centric interface that prioritizes accessibility and ease of use for students. Key technical highlights include a complex category-based filtering system, secure user authentication, and a clean marketplace UI that manages diverse listing types—from textbooks to academic research papers. It is a social-commerce bridge designed to solve the real-world problem of expensive college resources.",
+            "A comprehensive personal finance dashboard designed for tracking expenses and income across customizable categories. Features a robust dark/light mode implementation using Tailwind CSS v4 and a responsive mobile-first UI with a bottom navigation bar. Built with React and Recharts for dynamic data visualization, and includes fully integrated CSV export capabilities alongside reliable localStorage data persistence.",
+        image: "/assets/projects/fintrack.png",
+        tags: ["React", "Tailwind CSS", "Recharts", "Data Vis"],
+        link: "https://fintrack-eight-mu.vercel.app",
+    },
+    {
+        id: 5,
+        title: "Digital Book Store",
+        description:
+            "A fast, modern e-commerce platform designed exclusively for browsing and purchasing books. It features a streamlined shopping cart experience, intuitive book category filtering, and a responsive design that looks great on mobile devices. The UI focuses on high readability and smooth interactions, ensuring users can discover their next favorite read effortlessly.",
         image: "/assets/projects/bookstore.png",
-        tags: ["React", "Tailwind CSS", "Marketplace Engine", "Auth"],
-        link: "https://book-store-beta-topaz.vercel.app",
+        tags: ["React", "Tailwind CSS", "Full-Stack", "E-commerce"],
+        link: "https://book-store-beta-topaz.vercel.app/",
     },
 ];
 

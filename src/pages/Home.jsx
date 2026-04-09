@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Menu, X, Github, Linkedin, Twitter, MapPin, Briefcase, Code,
     Code2, Palette, Zap, Sparkles, ExternalLink, Send, CheckCircle,
-    ChevronDown,
+    ChevronDown, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { skills, technologies, projects, socialLinks } from '../mock.js';
 
@@ -135,6 +135,143 @@ const ProjectCard = ({ project }) => {
                 </a>
             </div>
         </div>
+    );
+};
+
+/* ══════════════════════════════════════════════════════════════
+   HORIZONTAL SCROLL PROJECTS
+══════════════════════════════════════════════════════════════ */
+const HorizontalScrollProjects = ({ projects }) => {
+    const scrollRef = useRef(null);
+
+    const scroll = (direction) => {
+        if (!scrollRef.current) return;
+        const scrollAmount = window.innerWidth > 768 ? scrollRef.current.clientWidth / 2 : scrollRef.current.clientWidth;
+        scrollRef.current.scrollBy({
+            left: direction === 'left' ? -scrollAmount : scrollAmount,
+            behavior: 'smooth'
+        });
+    };
+
+    return (
+        <section id="projects" style={{ backgroundColor: 'var(--portfolio-bg)', padding: '96px 0', overflow: 'hidden' }}>
+            <div className="container-custom">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '56px', flexWrap: 'wrap', gap: '24px' }}>
+                    <div className="scroll-reveal" style={{ textAlign: 'left' }}>
+                        <p style={{ color: ACCENT, fontWeight: 800, fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '4px', marginBottom: '16px' }}>
+                            My Work
+                        </p>
+                        <h2 className="font-fraunces" style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--portfolio-text)', marginBottom: 0 }}>
+                            Projects
+                        </h2>
+                    </div>
+
+                    {/* Navigation Buttons to hint at more content */}
+                    <div className="scroll-reveal" style={{ display: 'flex', gap: '12px' }}>
+                        <button 
+                            onClick={() => scroll('left')}
+                            style={{ 
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                width: '48px', height: '48px', borderRadius: '50%',
+                                backgroundColor: 'var(--portfolio-card-bg)', border: '1px solid var(--portfolio-border)',
+                                color: 'var(--portfolio-text)', cursor: 'pointer', transition: 'all 0.2s',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.color = ACCENT; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--portfolio-border)'; e.currentTarget.style.color = 'var(--portfolio-text)'; }}
+                            aria-label="Scroll left"
+                        >
+                            <ChevronLeft size={24} />
+                        </button>
+                        <button 
+                            onClick={() => scroll('right')}
+                            style={{ 
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                width: '48px', height: '48px', borderRadius: '50%',
+                                backgroundColor: 'var(--portfolio-card-bg)', border: '1px solid var(--portfolio-border)',
+                                color: 'var(--portfolio-text)', cursor: 'pointer', transition: 'all 0.2s',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.color = ACCENT; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--portfolio-border)'; e.currentTarget.style.color = 'var(--portfolio-text)'; }}
+                            aria-label="Scroll right"
+                        >
+                            <ChevronRight size={24} />
+                        </button>
+                    </div>
+                </div>
+
+                <div className="projects-scroll-container" ref={scrollRef}>
+                    {projects.map((project) => (
+                        <div key={project.id} className="project-card-wrapper">
+                            <ProjectCard project={project} />
+                        </div>
+                    ))}
+                </div>
+
+                <div className="scroll-reveal" style={{ textAlign: 'center', marginTop: '32px' }}>
+                    <a
+                        href="https://github.com/CreateWithLalit"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '10px',
+                            border: `2px solid var(--portfolio-border)`, borderRadius: '10px',
+                            padding: '13px 32px', fontSize: '0.95rem', fontWeight: 600,
+                            color: 'var(--portfolio-text)', textDecoration: 'none',
+                            transition: 'border-color 0.2s ease, color 0.2s ease, transform 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.color = ACCENT; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--portfolio-border)'; e.currentTarget.style.color = 'var(--portfolio-text)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                    >
+                        <Github size={18} /> View All on GitHub
+                    </a>
+                </div>
+            </div>
+            <style>{`
+                .projects-scroll-container {
+                    display: flex;
+                    overflow-x: auto;
+                    scroll-snap-type: x mandatory;
+                    gap: 28px;
+                    padding-bottom: 32px;
+                    -webkit-overflow-scrolling: touch;
+                }
+                .project-card-wrapper {
+                    flex-shrink: 0;
+                    scroll-snap-align: start;
+                    /* Mobile: show 1 large item (85% of screen) */
+                    width: 85vw;
+                }
+                
+                /* Tablet: show 2 items at a time */
+                @media (min-width: 768px) {
+                    .project-card-wrapper {
+                        width: calc(50% - 14px);
+                    }
+                }
+                
+                /* Desktop: show exactly 3 items at a time */
+                @media (min-width: 1024px) {
+                    .project-card-wrapper {
+                        width: calc(33.333% - 18.66px);
+                    }
+                }
+
+                .projects-scroll-container::-webkit-scrollbar {
+                    height: 10px;
+                }
+                .projects-scroll-container::-webkit-scrollbar-track {
+                    background: rgba(255, 255, 255, 0.02);
+                    border-radius: 8px;
+                }
+                .projects-scroll-container::-webkit-scrollbar-thumb {
+                    background: rgba(200, 200, 200, 0.15);
+                    border-radius: 8px;
+                }
+                .projects-scroll-container::-webkit-scrollbar-thumb:hover {
+                    background: rgba(200, 200, 200, 0.25);
+                }
+            `}</style>
+        </section>
     );
 };
 
@@ -436,24 +573,20 @@ export default function Home() {
                         <span className="animate-blink" style={{ color: ACCENT, marginLeft: '4px' }}>|</span>
                     </h1>
 
-                    {/* Tagline */}
-                    <p className="font-dm-sans animate-fade-in-up stagger-3"
-                        style={{ fontSize: '1.25rem', color: MUTED, marginBottom: '16px', fontWeight: 500 }}>
-                        Creative Developer &amp; Designer
-                    </p>
+
 
                     {/* Bio */}
                     <p className="font-dm-sans animate-fade-in-up stagger-3"
                         style={{ fontSize: '1rem', color: MUTED, marginBottom: '40px', lineHeight: 1.7, maxWidth: '520px', margin: '0 auto 40px' }}>
-                        I'm a frontend developer specialising in React — building fast, beautiful, and accessible web experiences that users love.
+                        I'm a Full Stack Developer specialising in Next.js, React, and TypeScript — building responsive, fast, and user-focused web applications.
                     </p>
 
                     {/* CTA buttons */}
                     <div className="animate-fade-in-up stagger-4"
                         style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '60px' }}>
                         <a
-                            href="/resume.pdf"
-                            download="Lalit_Resume.pdf"
+                            href="/Lalit'sResume.pdf"
+                            download="Lalit'sResume.pdf"
                             style={{
                                 backgroundColor: ACCENT, color: '#fff',
                                 border: `2px solid ${ACCENT}`, borderRadius: '10px',
@@ -467,6 +600,24 @@ export default function Home() {
                             onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                         >
                             Download Resume
+                        </a>
+                        <a
+                            href="/Lalit'sResume.pdf"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                backgroundColor: 'transparent', color: ACCENT,
+                                border: `2px solid ${ACCENT}`, borderRadius: '10px',
+                                padding: '13px 32px', fontSize: '0.95rem', fontWeight: 600,
+                                cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                                textDecoration: 'none',
+                                transition: 'transform 0.2s ease, background-color 0.2s ease, color 0.2s ease',
+                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = ACCENT; e.currentTarget.style.color = '#fff'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = ACCENT; e.currentTarget.style.transform = 'translateY(0)'; }}
+                        >
+                            View Resume
                         </a>
                         <button
                             onClick={() => scrollToSection('contact')}
@@ -589,15 +740,10 @@ export default function Home() {
                                 Bridging Design & Engineering with Modern Web Solutions
                             </h2>
                             <p style={{ color: MUTED, lineHeight: 1.8, marginBottom: '16px', fontSize: '0.97rem' }}>
-                                I'm Lalit, a results-driven Frontend Developer and dedicated **Freelancer** based in India.
-                                Over the past year, I've mastered the art of building scalable, high-performance web applications
-                                using **React, Next.js, and Full-Stack integrations** like Supabase and Node.js.
+                                I'm Lalit, a results-driven Full Stack Developer based in Noida, India. With a solid foundation in modern web technologies, I have delivered responsive web applications for freelance clients, achieving a 100% on-time delivery rate and 4.9/5 client satisfaction rating.
                             </p>
                             <p style={{ color: MUTED, lineHeight: 1.8, marginBottom: '24px', fontSize: '0.97rem' }}>
-                                My journey is defined by a commitment to continuous learning and the successful delivery of complex projects.
-                                I recently engineered the **D-Dion Luxury Restaurant platform**, a full-stack solution featuring
-                                real-time bookings and administrative control. My approach combines pixel-perfect design
-                                with clean, maintainable code to create seamless digital products.
+                                I specialize in building scalable, high-performance web applications using JavaScript (ES6+), TypeScript, Next.js, React, and Supabase. I am passionate about optimizing web performance, achieving 90+ Lighthouse scores, and implementing cross-browser compatible solutions. I'm actively seeking a full-time frontend/full-stack role to contribute my technical expertise and drive user-focused solutions.
                             </p>
                             <div style={{
                                 backgroundColor: 'rgba(73,136,196,0.05)',
@@ -727,46 +873,7 @@ export default function Home() {
             {/* ════════════════════════════════════
           PROJECTS
       ════════════════════════════════════ */}
-            <section id="projects" style={{ backgroundColor: 'var(--portfolio-bg)', padding: '96px 0' }}>
-                <div className="container-custom">
-                    {/* Header */}
-                    <div className="scroll-reveal" style={{ textAlign: 'center', marginBottom: '56px' }}>
-                        <p style={{ color: ACCENT, fontWeight: 800, fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '4px', marginBottom: '16px' }}>
-                            My Work
-                        </p>
-                        <h2 className="font-fraunces" style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--portfolio-text)' }}>
-                            Featured Projects
-                        </h2>
-                    </div>
-
-                    {/* Grid */}
-                    <div className="scroll-reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '28px', marginBottom: '48px' }}>
-                        {projects.map((project) => (
-                            <ProjectCard key={project.id} project={project} />
-                        ))}
-                    </div>
-
-                    {/* GitHub CTA */}
-                    <div className="scroll-reveal" style={{ textAlign: 'center' }}>
-                        <a
-                            href="https://github.com/CreateWithLalit"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                                display: 'inline-flex', alignItems: 'center', gap: '10px',
-                                border: `2px solid var(--portfolio-border)`, borderRadius: '10px',
-                                padding: '13px 32px', fontSize: '0.95rem', fontWeight: 600,
-                                color: 'var(--portfolio-text)', textDecoration: 'none',
-                                transition: 'border-color 0.2s ease, color 0.2s ease, transform 0.2s ease',
-                            }}
-                            onMouseEnter={(e) => { e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.color = ACCENT; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--portfolio-border)'; e.currentTarget.style.color = 'var(--portfolio-text)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-                        >
-                            <Github size={18} /> View All on GitHub
-                        </a>
-                    </div>
-                </div>
-            </section>
+            <HorizontalScrollProjects projects={projects} />
 
             {/* ════════════════════════════════════
           CONTACT
